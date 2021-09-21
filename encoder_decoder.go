@@ -17,6 +17,11 @@ type encoderWithHeader interface {
 	headerVersion() int16
 }
 
+// DoEncode encodes using a given encoder.
+func DoEncode(e encoder, metricRegistry metrics.Registry) ([]byte, error) {
+	return encode(e, metricRegistry)
+}
+
 // Encode takes an Encoder and turns it into bytes while potentially recording metrics.
 func encode(e encoder, metricRegistry metrics.Registry) ([]byte, error) {
 	if e == nil {
@@ -55,6 +60,11 @@ type versionedDecoder interface {
 	decode(pd packetDecoder, version int16) error
 }
 
+// DoDecode decodes a given payload using a given decoder.
+func DoDecode(buf []byte, in decoder) error {
+	return decode(buf, in)
+}
+
 // decode takes bytes and a decoder and fills the fields of the decoder from the bytes,
 // interpreted using Kafka's encoding rules.
 func decode(buf []byte, in decoder) error {
@@ -73,6 +83,11 @@ func decode(buf []byte, in decoder) error {
 	}
 
 	return nil
+}
+
+// DoVersionedDecode decodes a given payload using a given decoder, passing version argument.
+func DoVersionedDecode(buf []byte, in versionedDecoder, version int16) error {
+	return versionedDecode(buf, in, version)
 }
 
 func versionedDecode(buf []byte, in versionedDecoder, version int16) error {
