@@ -551,7 +551,7 @@ func (mr *MockProduceResponse) For(reqBody versionedDecoder) encoderWithHeader {
 	res := &ProduceResponse{
 		Version: mr.version,
 	}
-	for topic, partitions := range req.records {
+	for topic, partitions := range req.Records {
 		for partition := range partitions {
 			res.AddTopicPartition(topic, partition, mr.getError(topic, partition))
 		}

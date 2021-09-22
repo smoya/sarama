@@ -25,7 +25,7 @@ type ProduceRequest struct {
 	RequiredAcks    RequiredAcks
 	Timeout         int32
 	Version         int16 // v1 requires Kafka 0.9, v2 requires Kafka 0.10, v3 requires Kafka 0.11
-	records         map[string]map[int32]Records
+	Records         map[string]map[int32]Records
 }
 
 func updateMsgSetMetrics(msgSet *MessageSet, compressionRatioMetric metrics.Histogram,
@@ -80,12 +80,12 @@ func (r *ProduceRequest) encode(pe packetEncoder) error {
 	}
 	totalRecordCount := int64(0)
 
-	err := pe.putArrayLength(len(r.records))
+	err := pe.putArrayLength(len(r.Records))
 	if err != nil {
 		return err
 	}
 
-	for topic, partitions := range r.records {
+	for topic, partitions := range r.Records {
 		err = pe.putString(topic)
 		if err != nil {
 			return err
@@ -162,7 +162,7 @@ func (r *ProduceRequest) decode(pd packetDecoder, version int16) error {
 		return nil
 	}
 
-	r.records = make(map[string]map[int32]Records)
+	r.Records = make(map[string]map[int32]Records)
 	for i := 0; i < topicCount; i++ {
 		topic, err := pd.getString()
 		if err != nil {
@@ -172,7 +172,7 @@ func (r *ProduceRequest) decode(pd packetDecoder, version int16) error {
 		if err != nil {
 			return err
 		}
-		r.records[topic] = make(map[int32]Records)
+		r.Records[topic] = make(map[int32]Records)
 
 		for j := 0; j < partitionCount; j++ {
 			partition, err := pd.getInt32()
@@ -191,7 +191,7 @@ func (r *ProduceRequest) decode(pd packetDecoder, version int16) error {
 			if err := records.decode(recordsDecoder); err != nil {
 				return err
 			}
-			r.records[topic][partition] = records
+			r.Records[topic][partition] = records
 		}
 	}
 
@@ -226,22 +226,22 @@ func (r *ProduceRequest) requiredVersion() KafkaVersion {
 }
 
 func (r *ProduceRequest) ensureRecords(topic string, partition int32) {
-	if r.records == nil {
-		r.records = make(map[string]map[int32]Records)
+	if r.Records == nil {
+		r.Records = make(map[string]map[int32]Records)
 	}
 
-	if r.records[topic] == nil {
-		r.records[topic] = make(map[int32]Records)
+	if r.Records[topic] == nil {
+		r.Records[topic] = make(map[int32]Records)
 	}
 }
 
 func (r *ProduceRequest) AddMessage(topic string, partition int32, msg *Message) {
 	r.ensureRecords(topic, partition)
-	set := r.records[topic][partition].MsgSet
+	set := r.Records[topic][partition].MsgSet
 
 	if set == nil {
 		set = new(MessageSet)
-		r.records[topic][partition] = newLegacyRecords(set)
+		r.Records[topic][partition] = newLegacyRecords(set)
 	}
 
 	set.addMessage(msg)
@@ -249,10 +249,10 @@ func (r *ProduceRequest) AddMessage(topic string, partition int32, msg *Message)
 
 func (r *ProduceRequest) AddSet(topic string, partition int32, set *MessageSet) {
 	r.ensureRecords(topic, partition)
-	r.records[topic][partition] = newLegacyRecords(set)
+	r.Records[topic][partition] = newLegacyRecords(set)
 }
 
 func (r *ProduceRequest) AddBatch(topic string, partition int32, batch *RecordBatch) {
 	r.ensureRecords(topic, partition)
-	r.records[topic][partition] = newDefaultRecords(batch)
+	r.Records[topic][partition] = newDefaultRecords(batch)
 }

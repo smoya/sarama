@@ -1024,7 +1024,7 @@ func TestAsyncProducerIdempotentRetryCheckBatch(t *testing.T) {
 				prodCounter++
 
 				preq := req.body.(*ProduceRequest)
-				batch := preq.records["my_topic"][0].RecordBatch
+				batch := preq.Records["my_topic"][0].RecordBatch
 				batchFirstSeq := int(batch.FirstSequence)
 				batchSize := len(batch.Records)
 
@@ -1202,7 +1202,7 @@ func TestAsyncProducerIdempotentEpochRollover(t *testing.T) {
 	<-producer.Errors()
 
 	lastReqRes := broker.history[len(broker.history)-1]
-	lastProduceBatch := lastReqRes.Request.(*ProduceRequest).records["my_topic"][0].RecordBatch
+	lastProduceBatch := lastReqRes.Request.(*ProduceRequest).Records["my_topic"][0].RecordBatch
 	if lastProduceBatch.FirstSequence != 0 {
 		t.Error("first sequence not zero")
 	}
@@ -1216,7 +1216,7 @@ func TestAsyncProducerIdempotentEpochRollover(t *testing.T) {
 	<-producer.Errors()
 
 	lastReqRes = broker.history[len(broker.history)-1]
-	lastProduceBatch = lastReqRes.Request.(*ProduceRequest).records["my_topic"][0].RecordBatch
+	lastProduceBatch = lastReqRes.Request.(*ProduceRequest).Records["my_topic"][0].RecordBatch
 	if lastProduceBatch.FirstSequence != 0 {
 		t.Error("second sequence not zero")
 	}

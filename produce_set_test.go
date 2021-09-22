@@ -165,7 +165,7 @@ func TestProduceSetRequestBuilding(t *testing.T) {
 		t.Error("Timeout not set properly")
 	}
 
-	if len(req.records) != 2 {
+	if len(req.Records) != 2 {
 		t.Error("Wrong number of topics in request")
 	}
 }
@@ -194,7 +194,7 @@ func TestProduceSetCompressedRequestBuilding(t *testing.T) {
 		t.Error("Wrong request version")
 	}
 
-	for _, msgBlock := range req.records["t1"][0].MsgSet.Messages {
+	for _, msgBlock := range req.Records["t1"][0].MsgSet.Messages {
 		msg := msgBlock.Msg
 		err := msg.decodeSet()
 		if err != nil {
@@ -254,7 +254,7 @@ func TestProduceSetV3RequestBuilding(t *testing.T) {
 		t.Error("Wrong request version")
 	}
 
-	batch := req.records["t1"][0].RecordBatch
+	batch := req.Records["t1"][0].RecordBatch
 	if !batch.FirstTimestamp.Equal(now.Truncate(time.Millisecond)) {
 		t.Errorf("Wrong first timestamp: %v", batch.FirstTimestamp)
 	}
@@ -333,7 +333,7 @@ func TestProduceSetIdempotentRequestBuilding(t *testing.T) {
 		t.Error("Wrong request version")
 	}
 
-	batch := req.records["t1"][0].RecordBatch
+	batch := req.Records["t1"][0].RecordBatch
 	if !batch.FirstTimestamp.Equal(now.Truncate(time.Millisecond)) {
 		t.Errorf("Wrong first timestamp: %v", batch.FirstTimestamp)
 	}
@@ -407,7 +407,7 @@ func TestProduceSetConsistentTimestamps(t *testing.T) {
 	if req1.Version != 3 {
 		t.Error("Wrong request version")
 	}
-	batch1 := req1.records["t1"][0].RecordBatch
+	batch1 := req1.Records["t1"][0].RecordBatch
 	ft1 := batch1.FirstTimestamp.Unix()*1000 + int64(batch1.FirstTimestamp.Nanosecond()/1000000)
 	time1 := ft1 + int64(batch1.Records[1].TimestampDelta/time.Millisecond)
 
@@ -417,7 +417,7 @@ func TestProduceSetConsistentTimestamps(t *testing.T) {
 	if req2.Version != 3 {
 		t.Error("Wrong request version")
 	}
-	batch2 := req2.records["t1"][0].RecordBatch
+	batch2 := req2.Records["t1"][0].RecordBatch
 	ft2 := batch2.FirstTimestamp.Unix()*1000 + int64(batch2.FirstTimestamp.Nanosecond()/1000000)
 	time2 := ft2 + int64(batch2.Records[1].TimestampDelta/time.Millisecond)
 
